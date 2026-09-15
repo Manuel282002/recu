@@ -1,44 +1,40 @@
-# Security Policy
+# Security Policy - HUILA TRAVEL EXPEDITION
 
 > Security is not a feature — it is a system property built from day one. This document
-> defines the mandatory practices.
-> Any deviation must be explicitly approved by the Tech Lead.
+> defines the mandatory practices. Any deviation must be explicitly approved by the Tech Lead.
 
 ---
 
 ## Security principles
 
-1. **Defense in Depth:** Multiple security layers. If one fails, the others contain the damage.
-2. **Least Privilege:** Each component has only the minimum necessary permissions.
-3. **Fail Secure:** In case of error, the system denies access, does not allow it.
-4. **Security by Design:** Security controls are designed from the start, not added at the end.
-5. **Zero Trust:** Always verify, never implicitly trust, even within the internal network.
+1. **Defense in Depth:** Multiple security layers. If one fails (like a frontend block), Laravel middleware and MySQL database constraints contain the damage.
+2. **Least Privilege:** Each component and database connection has only the minimum necessary permissions.
+3. **Fail Secure:** In case of error (such as a bad query or crash), the system denies access and does not expose internal Laravel configurations.
+4. **Security by Design:** Security controls, role permissions, and Law 1581 compliance are designed from the start, not added at the end.
+5. **Zero Trust:** Always verify session tokens and permissions, never implicitly trust user parameters.
 
 ---
 
-## Authentication
+## Authentication & Session Management
 
-### JWT (JSON Web Tokens)
+### Laravel Session & Token Validation
 
 | Property | Required value |
 |----------|---------------|
-| Signing algorithm | RS256 (asymmetric) or HS256 with 256+ bit secret |
-| Access token expiration | 1 hour (`exp`) |
-| Refresh token expiration | 7 days |
-| Required claims | `sub` (userId), `iat`, `exp`, `jti` (unique token ID) |
-| Client storage | `httpOnly cookie` (web) or Keychain/Keystore (mobile) |
+| Authentication Engine | Laravel Sanctum / Native Session Auth |
+| Access session expiration | 30 minutes of inactivity (As required by HU-02) |
+| Password Hashing Algorithm | Native Laravel bcrypt (As required by RNF8) |
+| Token Client storage | `httpOnly cookie` (Web client protection) |
 
-**Prohibited in the payload:**
-- Passwords
-- Card data
-- Full PII (only the user ID)
+**Prohibited in the payload/session:**
+- Plain text passwords
+- Credit card data
+- Full PII (only the user ID and active role scoped payload)
 
-### Refresh Token
-
-- Stored in the database (with bcrypt hash)
-- Mandatory rotation on each use (one refresh token = one use)
-- Invalidated on logout and on password change
-- ALL active tokens invalidated if use of a revoked token is detected
+### Brute Force Protection (HU-02)
+- Managed via Laravel's native Rate Limiting middleware (`throttle`).
+- The system temporarily blocks access to a profile or IP address for 15 minutes after 5 consecutive failed login attempts.
+- All tokens or active session state are completely invalidated on logout or on a successful password change.
 
 ---
 
@@ -46,114 +42,84 @@
 
 ### RBAC (Role-Based Access Control)
 
+As defined in the SRS, the platform restricts functionalities through three specific roles (RF16):
+
 | Role | Description | Permissions |
 |------|-------------|------------|
-| `SUPER_ADMIN` | System technical administrator | All |
-| `ADMIN` | Business administrator | [define] |
-| `OPERATOR` | Operator with write permissions | [define] |
-| `VIEWER` | Read-only | [define] |
-| `[CUSTOM_ROLE]` | [description] | [define] |
+| `Administrador` | System technical and content administrator | All permissions, verify agency RNT records, moderate traveler reviews, global Excel/PDF reports (RF15). |
+| `Agencia` | Local travel agency / Provider | Register, edit, or delete own packages (RF4), manage availability calendars (RF9), approve/cancel bookings (RF11), and download own PDF statistics. |
+| `Turista` | General Traveler / End User | Search and compare packages by municipality (RF7), submit booking requests (RF10), accept terms (RF20), and publish stars/reviews (RF14). |
 
 **Permission model:**
-
-```
-Permission: [resource]:[action]
-
-Examples:
-  orders:create
-  orders:read
-  orders:update
-  orders:delete
-  users:read
-  reports:export
-```
+Permission: [resource]:[action]Examples for HTE:agencies:verifyplans:createplans:updateplans:deletebookings:requestreviews:moderate
 
 **Validation:**
-- The API Gateway validates the JWT (signature and expiration)
-- Each service validates the role permissions for the specific operation
-- Roles are included in the JWT as claim `roles: ["OPERATOR", "VIEWER"]`
+- System access is controlled directly through custom **Laravel Middleware** (`CheckRole:Administrador`, `CheckRole:Agencia`, `CheckRole:Turista`).
+- A Traveler profile cannot access agency controller scopes or backend endpoints under any circumstance.
 
 ---
 
 ## Secure communication
 
 ### Transmission
-
-- **HTTPS mandatory** in all environments except local
-- TLS 1.2 minimum; TLS 1.3 recommended
-- Certificates: Let's Encrypt (staging) / Corporate CA (production)
-- HSTS enabled in production
-
-### Internal service-to-service communication
-
-- mTLS for service-to-service communication in production (if possible with service mesh)
-- Bearer token or internal API key for services that do not support mTLS
+- **HTTPS mandatory** in all staging and production environments to protect regional agency data (Compliance with RNF7).
+- TLS 1.2 minimum; TLS 1.3 recommended.
+- Certificates: Let's Encrypt / Standard SSL configurations.
+- Automatic redirection from standard port 80 (HTTP) to port 443 (HTTPS).
 
 ---
 
 ## Secret management
 
-```
-✗ NEVER in source code
-✗ NEVER in committed .env
-✗ NEVER in logs
-✗ NEVER in client error messages
-✓ Environment variables (injected by the orchestrator)
-✓ Vault (HashiCorp Vault, AWS Secrets Manager, etc.)
-✓ Kubernetes Secrets (encrypted with KMS)
-```
-
+✗ NEVER in source code✗ NEVER in committed .env (only keep the .env.example template)✗ NEVER in log files (Laravel logs must mask credentials)✗ NEVER in client error messages (turn off APP_DEBUG in production environments)✓ Environment variables (injected securely in the hosting server configuration)
 **Secret rotation:**
-- API keys: every 90 days
-- TLS certificates: 60 days before expiration
-- DB passwords: every 6 months or immediately if compromise is suspected
+- Mail SMTP credentials: every 90 days.
+- External API keys (Wompi / PayU / WhatsApp API): every 6 months or immediately if a compromise is suspected.
+- Database production passwords: every 6 months.
 
 ---
 
 ## Input validation and sanitization
 
 ### General rules
-
-1. **Never trust user input.** Validate at the edge (controller) before processing.
-2. **Whitelist, not blacklist.** Define what is allowed, not only what is prohibited.
-3. **Reject early.** If input is invalid, respond 400 and do not process further.
+1. **Never trust user input.** Validate at the controller edge using **Laravel Form Requests** before passing parameters to Eloquent models.
+2. **Whitelist, not blacklist.** Define what specific data types, strings, and ranges are allowed.
+3. **Reject early.** If input is invalid, throw a validation exception immediately (returns a clean HTTP 422/400 response with clear error messages in Spanish - RNF6).
 
 ### SQL Injection — Prevention
+- **Safe:** Always use Laravel's Eloquent ORM or Query Builder prepared statements.
+- **Rule:** Avoid raw database strings (`DB::raw()`) with dynamic input variables.
 
-```typescript
+```php
 // ✗ VULNERABLE
-const result = await db.query(`SELECT * FROM users WHERE email = '${userInput}'`);
+\$plans = DB::select("SELECT * FROM plans WHERE municipality = '" . \$request->input('municipality') . "'");
 
-// ✓ SAFE — always use prepared parameters
-const result = await db.query('SELECT * FROM users WHERE email = $1', [userInput]);
+// ✓ SAFE — Eloquent handles query preparation automatically
+plans = Plan::where('municipality', request->input('municipality'))->get();
 ```
 
 ### XSS — Prevention
+- **Safe:** Always utilize Blade's native double curly braces (`{{ $userInput }}`) which automatically applies HTML sanitization before rendering pages.
+- **Rule:** Avoid the unescaped syntax `{!! $userInput !!}` for any untrusted content submitted by travel agencies or travelers.
 
-```typescript
-// ✗ VULNERABLE — rendering HTML without escaping
-element.innerHTML = userProvidedContent;
+### Validation with Laravel Form Requests
+Every application controller must enforce rigorous schema validation. Example for creating a booking request matching **HU-12**:
 
-// ✓ SAFE — use textContent or sanitize
-element.textContent = userProvidedContent;
-// or with library: DOMPurify.sanitize(userProvidedContent)
-```
-
-### Validation with Zod / Joi
-
-```typescript
-// Explicit validation schema in the controller
-const CreateOrderSchema = z.object({
-  clientId: z.string().uuid(),
-  items: z.array(z.object({
-    productId: z.string().uuid(),
-    quantity: z.number().int().positive().max(1000),
-    price: z.object({
-      amount: z.number().positive(),
-      currency: z.enum(['COP', 'USD']),
-    }),
-  })).min(1).max(50),
-});
+```php
+// App\Http\Requests\CreateBookingRequest
+public function rules()
+{
+    return [
+        'plan_id'       => 'required|exists:plans,id',
+        'document_id'   => 'required|string|max:20',
+        'traveler_name' => 'required|string|max:100',
+        'email'         => 'required|email|max:100',
+        'phone'         => 'required|string|max:15',
+        'booking_date'  => 'required|date|after_or_equal:today',
+        'guests_count'  => 'required|integer|min:1|max:50',
+        'terms_accepted'=> 'required|accepted', // Compliance with RF20 / Law 1581
+    ];
+}
 ```
 
 ---
@@ -162,72 +128,60 @@ const CreateOrderSchema = z.object({
 
 | Vulnerability | Implemented control |
 |---------------|-------------------|
-| A01: Broken Access Control | RBAC + permission validation in each service |
-| A02: Cryptographic Failures | TLS 1.2+, bcrypt for passwords, secrets in vault |
-| A03: Injection | Prepared parameters in SQL, schema validation |
-| A04: Insecure Design | Threat modeling in design, Security review |
-| A05: Security Misconfiguration | IaC for configuration, review of defaults |
-| A06: Vulnerable Components | Dependabot / Snyk for automatic updates |
-| A07: Authentication Failures | JWT with rotation, brute-force protection |
-| A08: Software Integrity Failures | Verify dependency checksums, SBOM |
-| A09: Logging Failures | Logs without PII, centralized, with alerts |
-| A10: SSRF | Whitelist of external URLs, do not follow redirects automatically |
+| A01: Broken Access Control | Middleware route protection and role-based policy validations (RF16). |
+| A02: Cryptographic Failures | HTTPS communication enforcement (RNF7), bcrypt for account passwords (RNF8). |
+| A03: Injection | Automatic parameterized query structures via Laravel Eloquent ORM. |
+| A04: Insecure Design | Threat modeling during the SRS requirement phase (ADSO 3239188). |
+| A05: Security Misconfiguration | Deactivating `APP_DEBUG` and error stacks in production environment configurations. |
+| A06: Vulnerable Components | Periodic audits of the `vendor/` directory utilizing `composer audit`. |
+| A07: Authentication Failures | Native session tokens with automated expiration thresholds and rate throttling (HU-02). |
+| A08: Software Integrity Failures | Verification of Composer dependencies and secure deployment workflows. |
+| A09: Logging Failures | Laravel logs structured safely without PII data leaks or password records. |
+| A10: SSRF | strict API validations when requesting data from external gateway integrations. |
 
 ---
 
 ## Audit and security logs
 
 ### Events that are ALWAYS recorded
-
-```typescript
-// Security events — store in a separate log, with retention > 1 year
-const SECURITY_EVENTS = [
-  'auth.login.success',
-  'auth.login.failure',
-  'auth.login.brute_force_detected',
-  'auth.password.changed',
-  'auth.token.revoked',
-  'auth.unauthorized_access_attempt',
-  'data.pii.accessed',
-  'admin.role.changed',
-  'admin.user.deleted',
+```php
+// Security events stored within storage/logs/security.log
+const HTE_SECURITY_EVENTS = [
+    'auth.login.success',
+    'auth.login.failure',
+    'auth.rate_limit_triggered',
+    'auth.password.changed',
+    'booking.terms_accepted', // Records the date and timestamp for Law 1581 compliance
+    'admin.agency.verified',
+    'admin.review.deleted',
 ];
 ```
 
-**Required fields in security logs:**
-- `userId` (or `ANONYMOUS` if not authenticated)
-- `sourceIp`
-- `action`
-- `resource`
-- `result` (SUCCESS / FAILURE)
-- `timestamp`
+**Required fields in security log rows:**
+- `user_id` (or `ANONYMOUS` if not logged in).
+- `source_ip`.
+- `action_type`.
+- `affected_resource`.
+- `result_status` (SUCCESS / FAILURE).
+- `timestamp`.
 
 ---
 
 ## Vulnerability process
 
-### What to do if you find a vulnerability
-
-1. **Do not commit it to the public repo** or discuss it in open channels
-2. Immediately notify the Tech Lead via a private channel
-3. Create a private issue or a restricted repository issue
-4. Severity is assigned (CVSS score or internal classification)
-5. Remediated in the current sprint if critical, in the next sprint if high
-
-### Remediation SLAs
+### Remediation SLAs for HTE Platform
 
 | Severity | Remediation time |
 |----------|----------------|
-| Critical (CVSS 9-10) | 24 hours |
-| High (CVSS 7-8.9) | 1 week |
-| Medium (CVSS 4-6.9) | 1 month |
-| Low (CVSS < 4) | Next security review |
+| Critical (Data leaks or authentication bypass) | 24 hours |
+| High (Booking calculation failures or calendar bypass) | 48 hours |
+| Medium (UI discrepancies or minor performance lags) | 1 week |
+| Low (Minor reporting layout issues) | Next development review |
 
 ---
 
 ## Correlations
 
-- Security non-functional requirements → `04-requirements/non-functional.md`
-- ADR on authentication → `05-architecture/decisions/`
-- Security event observability → `13-operations/observability.md`
-- RBAC implemented in → `09-microservices/services/XX-auth-service/`
+- Non-functional requirements catalog → `04-requirements/user-stories.md`
+- Definition of Done (Security controls) → `00-governance/definition-of-done.md`
+- Data Model integrity controls → `00-governance/microservices-documentation.md`
