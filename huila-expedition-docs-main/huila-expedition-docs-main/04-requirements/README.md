@@ -1,87 +1,53 @@
-# 04 — Requirements
+# 04 — Requirements — Huila Travel Expedition
 
-> **What is this?** The formal specification of what the system must do.
-> Functional: what it does. Non-functional: how well it does it.
+This module centralizes the formal requirements specification for the **Huila Travel Expedition** platform. It structures what the system must do (Functional Requirements) and how well it must do it (Non-Functional Requirements), serving as the foundational contract for the development team and the instructor's validation (Section 4).
+
+---
 
 ## Why this section exists
 
-Requirements are the contract between the team and the client/stakeholder.
-Without them:
-- There is no way to verify whether the system is complete
-- Scope changes have no baseline for comparison
-- Tests have no success criterion
+Requirements are the technical contract between the project team and stakeholders. In this system:
+- They establish a clear baseline to verify that all 20 core functionalities from the SRS are successfully met.
+- They set success criteria for PHPUnit implementation and manual interface validations.
+- They ensure that quality metrics remain stable under baseline hosting constraints (1 vCPU, 1 GB RAM).
 
 ---
 
 ## Types of requirements
 
 ### Functional (FR)
-Describe **what the system does**: functions, behaviors, data transformations.
-*Example: "The system must allow the user to recover their password via email."*
+Describe **what the system does**: user roles behaviors, catalog updates, and transactional booking status mutations.
+*Example: "The system must allow travel agencies to register and validate their National Tourism Register (RNT) code."*
 
 ### Non-functional (NFR)
-Describe **how it does it**: quality, performance, availability, security.
-*Example: "The system must respond in less than 200ms for 95% of requests."*
-
-NFRs are usually harder to meet than FRs and are ignored more frequently. **They are equally important.**
+Describe **how it does it**: performance constraints, usability rules, responsive screen adaptation, and legal compliance.
+*Example: "The main page and tour plans details must load in maximum 3 seconds under normal traffic conditions."*
 
 ---
 
 ## What is here and how to fill it in
 
 ### `functional.md` ⭐
-List of all the system's functional requirements.
-**Fill in:** numbered, with the module/service they belong to, source (originating HU), priority.
-
-**Format:**
-```markdown
-| ID | Module | Description | Source (HU) | Priority |
-|----|--------|-------------|------------|---------|
-| FR-001 | [Service] | The system must [do something] | HU-XXX-001 | High |
-```
+A numbered specification of all the system's functional requirements from the SRS.
+**Content:** Mapped directly across our three core subsystems: Administration (`RF15`, `RF16`), Agencias (`RF1`, `RF3`, `RF4`, `RF5`, `RF8`, `RF9`, `RF11`), and Turistas (`RF6`, `RF7`, `RF10`, `RF12`, `RF13`, `RF14`, `RF17`, `RF18`, `RF19`, `RF20`).
 
 ### `non-functional.md` ⭐
-Quality, performance, and technical constraint requirements.
-**Fill in:** by category (performance, availability, security, scalability, etc.)
-
-**Format:**
-```markdown
-## Performance
-| ID | Requirement | Metric | How to verify |
-|----|------------|--------|--------------|
-| NFR-001 | Response time | p95 < 200ms | Load test with K6 |
-
-## Availability
-| ID | Requirement | Metric | How to verify |
-|----|------------|--------|--------------|
-| NFR-010 | Uptime | 99.9% monthly | Production monitoring |
-
-## Security
-| ID | Requirement | Description |
-|----|------------|-------------|
-| NFR-020 | Authentication | JWT with 1-hour expiration |
-```
+Quality, performance, security, and technical infrastructure constraints.
+**Content:** Documented metrics according to SRS guidelines, detailing the 3-second maximum page load (`RNF1`), 500 KB auto-image compression (`RNF2`), 30-50 concurrent users target (`RNF3`), and secure `bcrypt` credential hashing (`RNF8`).
 
 ### `user-stories.md`
-Formalized user stories (coming from the `03-product/` backlog).
-**Fill in:** with As/I want/So that format + verifiable acceptance criteria.
+Formalized product backlog stories for sprint allocation.
+**Content:** Detailed agile cards utilizing the *As/I want/So that* format, backed by verifiable acceptance criteria written in Gherkin syntax (such as `HU-AGENCY-001` for online agency registration).
 
 ### `traceability-matrix.md` ⭐
-Table that connects: HU → Requirement → Test case.
-**Fill in:** when you have requirements and tests defined. Allows coverage verification.
-
-**Format:**
-```markdown
-| HU | FR/NFR | Description | Test case | Status |
-|----|--------|-------------|----------|--------|
-| HU-IAM-001 | FR-001 | Login with email | TC-001 | ✅ |
-```
+The relational grid linking user stories, requirements, and test scripts.
+**Content:** An end-to-end matrix mapping requirements to their technical verification components within the Laravel layout, proving 100% requirement coverage.
 
 ### `_template-hu.md`
-Template for a complete User Story with acceptance criteria.
+Standardized team template for creating uniform User Stories with Gherkin scenarios.
 
 ### `_template-nfr.md`
-Template for specifying non-functional requirements with their verification metrics.
+Standardized team template for defining measurable quality metrics and verification tools.
 
 ---
 
@@ -89,29 +55,24 @@ Template for specifying non-functional requirements with their verification metr
 
 | This section feeds... | Why |
 |-----------------------|-----|
-| `05-architecture/` | Performance/availability NFRs guide architectural decisions |
-| `11-quality/testing-strategy.md` | Each FR must have at least one test case |
-| `09-microservices/` | FRs are grouped by responsible service |
-| `07-api/` | Integration FRs → endpoints in API contracts |
-| `15-project-control/risks.md` | Very demanding NFRs usually generate technical risks |
+| `05-architecture/` | Latency, data consistency, and hosting constraints guide our Laravel monolithic modular layout. |
+| `06-data/models.md` | Required database structures, data dictionaries, and field nullabilities are derived from FRs. |
+| `07-api/` | Functional requirements define the route endpoints, parameters, and payloads exposed by the system. |
 
 ---
 
 ## Common mistakes to avoid
 
-❌ **"The system must be fast"** → Not measurable. Better: "p95 < 200ms"
+❌ **"The platform must be fast"** → Not measurable. We use: "Main pages must load in less than 3 seconds (RNF1)."
 
-❌ **"The system must be secure"** → Not verifiable. Better: "Authentication with JWT, tokens expire in 1h"
+❌ **"The system must be secure"** → Too vague. We use: "Mandatory HTTPS traffic with active SSL and password encription via Laravel's native bcrypt hashing (RNF7, RNF8)."
 
-❌ Writing requirements that describe the solution instead of the problem.
-
-✅ A good requirement is: **specific, measurable, achievable, relevant, and verifiable**.
+❌ Writing requirements that limit code structure instead of defining the core business problem.
 
 ---
 
-## Questions this section must answer
+## Questions this section answers
 
-- What must the system do for each type of user?
-- With what speed, availability, and security?
-- Which requirement originates each test case?
-- Are all requirements covered by tests?
+- **What must the system do for each type of user?** It allows travelers to filter and request bookings, agencies to manage regional tour package calendars, and administrators to verify RNT certificates and moderate reviews.
+- **With what speed, availability, and security?** Under a 3-second response boundary, 99.0% monthly uptime target, and secure role-based access control (RBAC).
+- **Which requirement originates each test case?** Every validation rule links back to an explicit SRS requirement index (RF1 to RF20) inside our traceability grid.
