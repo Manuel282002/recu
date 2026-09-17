@@ -1,55 +1,55 @@
-# HU-[SERVICE]-[NNN]: [Story Title]
+# HU-AGENCY-001: Registro de Agencias mediante Formulario en Línea
 
-> **ID convention:** `HU-[SERVICE_ABBREVIATION]-[NNN]`
-> Examples: HU-IAM-001, HU-SCHED-023, HU-REF-005
-
----
-
-## Story
-
-**As** [user role — e.g.: instructor, coordinator, learner, administrator]
-**I want** [concrete action they want to perform]
-**So that** [benefit they receive / problem they solve]
+> **Convención de ID:** `HU-AGENCY-001` (Vinculada directamente al Requisito Funcional: RF1 del SRS)
 
 ---
 
-## Acceptance criteria
+## Historia de Usuario
 
-> Format: "Given [context/initial state], when [user action], then [expected and verifiable result]"
-
-- [ ] **AC1:** Given that [context], when [action], then [result]
-- [ ] **AC2:** Given that [context], when [action], then [result]
-- [ ] **AC3:** [Error scenario] Given that [invalid context], when [action], then [expected error]
+**Como** Agencia turística
+**Quiero** registrarme en la plataforma mediante un formulario en línea
+**Para** poder publicar mis planes turísticos y ser visible para los turistas del Huila.
 
 ---
 
-## Technical notes
+## Criterios de aceptación
 
-> [Implementation constraints, performance considerations, required integrations]
+> Formato: "Dado que [contexto/estado inicial], cuando [acción del usuario], entonces [resultado esperado y verificable]"
 
-**Responsible service(s):** [microservice name]
-**Endpoint(s) implemented:** [method + path]
-**Events generated:** [if applicable]
-**Required permissions:** [minimum role to perform this action]
-
----
-
-## Definition of Done (DoD)
-
-> This HU can only be closed when it meets the team's full DoD.
-> See: [`00-governance/definition-of-done.md`](../../00-governance/definition-of-done.md)
-
-**Additional checks specific to this HU (if applicable):**
-- [ ] [Additional check not covered by the general DoD — e.g.: DB migration executed in staging]
-- [ ] [Remove this section if there are no additional checks]
+- [ ] **AC1: Formulario Completo y Estado Inicial.** Dado que una agencia de viajes se encuentra en el formulario de registro, cuando ingresa todos los campos obligatorios (nombre, NIT, RNT, correo, teléfono y contraseña), entonces el sistema valida los datos en tiempo real, guarda el registro en la base de datos MySQL y la cuenta queda en estado 'pendiente de aprobación' hasta que el Administrador la verifique.
+- [ ] **AC2: Envío de Correo Automatizado.** Dado que el formulario de registro se ha completado y guardado con éxito, cuando el sistema procesa el registro, entonces envía un correo de confirmación de manera automática a la dirección registrada en un tiempo máximo de 2 minutos.
+- [ ] **AC3: Control de Duplicados Legales.** Dado que una agencia intenta registrarse ingresando un NIT o un RNT que ya existe en la plataforma, cuando presiona el botón de enviar, entonces el sistema bloquea el proceso y muestra un mensaje de error claro en español indicando que los identificadores ya se encuentran en uso.
 
 ---
 
-## Estimation and priority
+## Notas técnicas
 
-| Field | Value |
+> Restricciones de implementación, consideraciones de rendimiento e integraciones requeridas según las especificaciones del SRS.
+
+**Servicio(s) responsable(s):** `monolith-laravel (Modulo: Agencias)`
+**Endpoint(s) implementado(s):** `POST /api/v1/agencias/registro`
+**Eventos generados:** `AgencyRegistered`
+**Permisos requeridos:** Público / Usuario no autenticado
+
+---
+
+## Definición de Hecho (Definition of Done - DoD)
+
+> Esta Historia de Usuario solo puede cerrarse cuando cumple con el DoD completo del equipo.
+> Ver: `00-governance/definition-of-done.md`
+
+**Verificaciones adicionales específicas para esta HU:**
+- [ ] Migración de base de datos ejecutada y verificada para la tabla `agencias`.
+- [ ] Validaciones de formato y longitud en tiempo real para los campos NIT y RNT activadas en el frontend (Bootstrap/Tailwind).
+- [ ] Conexión con el servidor de correo SMTP configurada correctamente en el entorno de desarrollo para el despacho de alertas.
+
+---
+
+## Estimación y prioridad
+
+| Campo | Valor |
 |-------|-------|
-| Story Points | [1 / 2 / 3 / 5 / 8 / 13] |
-| Priority | High / Medium / Low |
-| Target sprint | Sprint N |
-| Dependencies | [HU-XXX-NNN that must be completed first] |
+| Story Points | 3 SP |
+| Prioridad | Alta |
+| Sprint objetivo | Sprint 1 |
+| Dependencias | Ninguna |
