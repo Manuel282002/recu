@@ -8,84 +8,35 @@
 
 ## Frontend route structure
 
-> **Instruction:** Fill this tree with your application's real routes.
-> Use the `[method] /route` format for API endpoints where applicable.
-
-```
-/                           → Home / landing page
-├── /auth
-│   ├── /login              → Authentication form
-│   ├── /register           → New user registration
-│   └── /forgot-password    → Password recovery
-│
-├── /dashboard              → Main panel (authenticated)
-│   ├── /overview           → Summary and key metrics
-│   └── /notifications      → Notification center
-│
-├── /[resource-a]           → [Resource A] list
-│   ├── /new                → Creation form
-│   └── /:id
-│       ├── /               → Resource detail
-│       └── /edit           → Edit form
-│
-├── /[resource-b]           → [Resource B] list
-│   └── /:id                → Detail
-│
-├── /admin                  → Administration panel (role: ADMIN)
-│   ├── /users              → User management
-│   └── /settings           → System configuration
-│
-└── /profile                → Authenticated user's profile
-```
-
----
+/                           → Home / landing page (Huila Travel Expedition)├── /auth│   ├── /login              → Authentication form (Acceso a panel de agencia, viajero o administración)│   ├── /register           → New user registration (Opciones: Soy viajero / Tengo una agencia)│   └── /forgot-password    → Password recovery│├── /dashboard              → Main panel (authenticated)│   ├── /overview           → Summary and key metrics (Estadísticas según rol)│   └── /notifications      → Notification center│├── /planes                 → Planes turísticos list (Búsqueda y filtros por municipio, precio, duración)│   ├── /new                → Creation form (Solo rol: Agencia)│   └── /:id│       ├── /               → Resource detail (Detalle de experiencia, itinerario, tarifas y calendario)│       └── /edit           → Edit form (Solo rol: Agencia)│├── /reservas               → Historial de reservas list (Pasadas y activas)│   └── /:id                → Detail (Detalle completo del bono de reserva y estado)│├── /admin                  → Administration panel (role: Administrador de Plataforma)│   ├── /agencias           → Verificación de agencias (Validación de RNT y estado de aprobación)│   └── /reseñas            → Moderación manual de contenido y reseñas inapropiadas│└── /profile                → Authenticated user's profile (Información de contacto, redes sociales, sitio web)
 
 ## Screen map
 
 | Screen | Route | Component | Minimum role | Backend service |
 |--------|-------|-----------|--------------|----------------|
 | Home | `/` | `HomePage` | Public | — |
-| Login | `/auth/login` | `LoginPage` | Public | auth-service |
-| Register | `/auth/register` | `RegisterPage` | Public | auth-service |
-| Dashboard | `/dashboard` | `DashboardPage` | USER | [service] |
-| [Resource A] list | `/[resource-a]` | `[ResourceA]ListPage` | USER | [service] |
-| [Resource A] detail | `/[resource-a]/:id` | `[ResourceA]DetailPage` | USER | [service] |
-| Create [Resource A] | `/[resource-a]/new` | `[ResourceA]FormPage` | USER | [service] |
-| Admin panel | `/admin` | `AdminDashboard` | ADMIN | auth-service |
+| Login | `/auth/login` | `LoginPage` | Public | Módulo de Registro y Autenticación |
+| Register | `/auth/register` | `RegisterPage` | Public | Módulo de Registro y Autenticación |
+| Dashboard | `/dashboard` | `DashboardPage` | Turista / Viajero | Módulo de Reservas |
+| Planes turísticos list | `/planes` | `PlanesListPage` | Public | Módulo de Búsqueda y Filtros |
+| Planes turísticos detail | `/planes/:id` | `PlanesDetailPage` | Public | Módulo de Gestión de Planes Turísticos |
+| Create Planes turísticos | `/planes/new` | `PlanesFormPage` | Agencia | Módulo de Gestión de Planes Turísticos |
+| Admin panel | `/admin` | `AdminDashboard` | Administrador | Módulo de Administración y Reportes |
 
 ---
 
 ## Main user flows
 
-### Flow 1 — [Name of main flow]
+### Flow 1 — Búsqueda, Selección y Solicitud de Reserva
 
-```
-[Start screen]
-    │
-    ▼ [User action]
-[Screen 2]
-    │
-    ├── [Successful case] ──► [OK result screen]
-    │
-    └── [Error case] ────► [Error screen / feedback]
-```
+Landing (/) o Filtros (/planes)│▼ Selecciona un plan específicoDetalle del Plan (/planes/:id)│▼ Completa formulario de reserva (Fecha, Personas, Tarifa) y acepta términos (RF20)Solicitud de Reserva│├── Cupo disponible en calendario ──► Solicitud Enviada (Estado: Pendiente)│└── Cupo lleno en calendario ──────► Alerta en interfaz (Evita sobreventas)
 
-**Related HUs:** HU-[service]-001, HU-[service]-002
+**Related HUs:** HU-11, HU-12, HU-16
 
 ### Flow 2 — Authentication
 
-```
-Landing (/)
-    │
-    ▼ Click "Sign in"
-Login (/auth/login)
-    │
-    ├── Valid credentials ──► Dashboard (/dashboard)
-    │
-    └── Invalid credentials ► Login with error message (max. 5 attempts)
-```
-
-**Related HUs:** HU-AUTH-001, HU-AUTH-002
+Landing (/)│▼ Click "Sign in" o "Iniciar sesión"Login (/auth/login)│├── Valid credentials ──► Dashboard (/dashboard) según rol (Administrador, Agencia, Turista)│└── Invalid credentials ► Login con mensaje de error en español (bloqueo al 5° intento por 15 min)
+**Related HUs:** HU-02, HU-04
 
 ---
 
@@ -93,16 +44,17 @@ Login (/auth/login)
 
 | Rule | Description |
 |------|-------------|
-| Authentication | Routes under `/dashboard`, `/[resource]`, `/admin` redirect to `/auth/login` if no session |
-| Authorization | Routes under `/admin` redirect to `/dashboard` if the user does not have ADMIN role |
+| Authentication | Routes under `/dashboard`, `/planes/new`, `/planes/:id/edit`, `/reservas`, `/admin` redirect to `/auth/login` if no session |
+| Authorization | Routes under `/admin` redirect to `/dashboard` if the user does not have Administrador role. Routes under `/planes/new` redirect to `/dashboard` if the user is not an Agencia. |
 | 404 | Undefined routes show the 404 screen with a link to dashboard |
-| Confirmation | Destructive actions (delete, cancel) show a confirmation dialog before executing |
+| Confirmation | Destructive actions (delete plan, cancel reservation) show a confirmation dialog modal before executing |
 
 ---
 
 ## Correlations
 
 - Design system (visual components) → `12-ux-ui/design-system.md`
-- Wireframes → `12-ux-ui/wireframes/` (if applicable)
+- Wireframes → `12-ux-ui/wireframes.md`
 - Frontend API contracts → `07-api/contracts/openapi/`
 - Roles and permissions → `00-governance/security-policy.md`
+
