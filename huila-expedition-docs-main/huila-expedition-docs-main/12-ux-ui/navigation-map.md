@@ -8,34 +8,34 @@
 
 ## Frontend route structure
 
-/                           → Home / landing page (Huila Travel Expedition)├── /auth│   ├── /login              → Authentication form (Acceso a panel de agencia, viajero o administración)│   ├── /register           → New user registration (Opciones: Soy viajero / Tengo una agencia)│   └── /forgot-password    → Password recovery│├── /dashboard              → Main panel (authenticated)│   ├── /overview           → Summary and key metrics (Estadísticas según rol)│   └── /notifications      → Notification center│├── /planes                 → Planes turísticos list (Búsqueda y filtros por municipio, precio, duración)│   ├── /new                → Creation form (Solo rol: Agencia)│   └── /:id│       ├── /               → Resource detail (Detalle de experiencia, itinerario, tarifas y calendario)│       └── /edit           → Edit form (Solo rol: Agencia)│├── /reservas               → Historial de reservas list (Pasadas y activas)│   └── /:id                → Detail (Detalle completo del bono de reserva y estado)│├── /admin                  → Administration panel (role: Administrador de Plataforma)│   ├── /agencias           → Verificación de agencias (Validación de RNT y estado de aprobación)│   └── /reseñas            → Moderación manual de contenido y reseñas inapropiadas│└── /profile                → Authenticated user's profile (Información de contacto, redes sociales, sitio web)
+/                           → Home / landing page (Huila Travel Expedition)├── /auth│   ├── /login              → Authentication form (Access to agency panel, traveler account, or admin dashboard)│   ├── /register           → New user registration (Options: I am a traveler / I have an agency)│   └── /forgot-password    → Password recovery│├── /dashboard              → Main panel (authenticated)│   ├── /overview           → Summary and key metrics (Statistics based on user role)│   └── /notifications      → Notification center│├── /planes                 → Tour plans list (Search and filters by municipality, price, duration)│   ├── /new                → Creation form (Role only: Agency)│   └── /:id│       ├── /               → Resource detail (Experience detail, itinerary, rates, and availability calendar)│       └── /edit           → Edit form (Role only: Agency)│├── /reservas               → Booking history list (Past and active bookings)│   └── /:id                → Detail (Complete booking voucher overview and status)│├── /admin                  → Administration panel (role: Platform Administrator)│   ├── /agencias           → Agency verification (RNT validation and approval status)│   └── /reseñas            → Manual moderation of content and inappropriate reviews│└── /profile                → Authenticated user's profile (Contact info, social media, and website link)
+---
 
 ## Screen map
 
 | Screen | Route | Component | Minimum role | Backend service |
 |--------|-------|-----------|--------------|----------------|
 | Home | `/` | `HomePage` | Public | — |
-| Login | `/auth/login` | `LoginPage` | Public | Módulo de Registro y Autenticación |
-| Register | `/auth/register` | `RegisterPage` | Public | Módulo de Registro y Autenticación |
-| Dashboard | `/dashboard` | `DashboardPage` | Turista / Viajero | Módulo de Reservas |
-| Planes turísticos list | `/planes` | `PlanesListPage` | Public | Módulo de Búsqueda y Filtros |
-| Planes turísticos detail | `/planes/:id` | `PlanesDetailPage` | Public | Módulo de Gestión de Planes Turísticos |
-| Create Planes turísticos | `/planes/new` | `PlanesFormPage` | Agencia | Módulo de Gestión de Planes Turísticos |
-| Admin panel | `/admin` | `AdminDashboard` | Administrador | Módulo de Administración y Reportes |
+| Login | `/auth/login` | `LoginPage` | Public | Registration and Authentication Module |
+| Register | `/auth/register` | `RegisterPage` | Public | Registration and Authentication Module |
+| Dashboard | `/dashboard` | `DashboardPage` | Tourist / Traveler | Bookings Module |
+| Tour plans list | `/planes` | `PlanesListPage` | Public | Search and Filters Module |
+| Tour plans detail | `/planes/:id` | `PlanesDetailPage` | Public | Tour Plans Management Module |
+| Create Tour plans | `/planes/new` | `PlanesFormPage` | Agency | Tour Plans Management Module |
+| Admin panel | `/admin` | `AdminDashboard` | Administrator | Administration and Reports Module |
 
 ---
 
 ## Main user flows
 
-### Flow 1 — Búsqueda, Selección y Solicitud de Reserva
+### Flow 1 — Search, Selection, and Booking Request
 
-Landing (/) o Filtros (/planes)│▼ Selecciona un plan específicoDetalle del Plan (/planes/:id)│▼ Completa formulario de reserva (Fecha, Personas, Tarifa) y acepta términos (RF20)Solicitud de Reserva│├── Cupo disponible en calendario ──► Solicitud Enviada (Estado: Pendiente)│└── Cupo lleno en calendario ──────► Alerta en interfaz (Evita sobreventas)
-
+Landing (/) or Filters (/planes)│▼ Select a specific planPlan Detail (/planes/:id)│▼ Fill out booking form (Date, People, Rate) and accept terms (RF20)Booking Request│├── Available slot in calendar ──► Request Sent (Status: Pending)│└── Full slot in calendar ──────► UI Warning Alert (Prevents overbooking)
 **Related HUs:** HU-11, HU-12, HU-16
 
 ### Flow 2 — Authentication
 
-Landing (/)│▼ Click "Sign in" o "Iniciar sesión"Login (/auth/login)│├── Valid credentials ──► Dashboard (/dashboard) según rol (Administrador, Agencia, Turista)│└── Invalid credentials ► Login con mensaje de error en español (bloqueo al 5° intento por 15 min)
+Landing (/)│▼ Click "Sign in"Login (/auth/login)│├── Valid credentials ──► Dashboard (/dashboard) based on role (Administrator, Agency, Tourist)│└── Invalid credentials ► Login with error message in Spanish (locked out on 5th attempt for 15 min)
 **Related HUs:** HU-02, HU-04
 
 ---
@@ -45,7 +45,7 @@ Landing (/)│▼ Click "Sign in" o "Iniciar sesión"Login (/auth/login)│├�
 | Rule | Description |
 |------|-------------|
 | Authentication | Routes under `/dashboard`, `/planes/new`, `/planes/:id/edit`, `/reservas`, `/admin` redirect to `/auth/login` if no session |
-| Authorization | Routes under `/admin` redirect to `/dashboard` if the user does not have Administrador role. Routes under `/planes/new` redirect to `/dashboard` if the user is not an Agencia. |
+| Authorization | Routes under `/admin` redirect to `/dashboard` if the user does not have the Administrator role. Routes under `/planes/new` redirect to `/dashboard` if the user is not an Agency. |
 | 404 | Undefined routes show the 404 screen with a link to dashboard |
 | Confirmation | Destructive actions (delete plan, cancel reservation) show a confirmation dialog modal before executing |
 
@@ -57,4 +57,3 @@ Landing (/)│▼ Click "Sign in" o "Iniciar sesión"Login (/auth/login)│├�
 - Wireframes → `12-ux-ui/wireframes.md`
 - Frontend API contracts → `07-api/contracts/openapi/`
 - Roles and permissions → `00-governance/security-policy.md`
-
