@@ -14,36 +14,36 @@ Tokens are the design system's variables. Changing a token changes the entire sy
 
 ```css
 /* Base palette */
---color-primary-50:  #E8F5E9;   /* Tonalidad más clara del verde SENA */
+--color-primary-50:  #E8F5E9;   /* Lightest SENA Green tint */
 --color-primary-100: #C8E6C9;
---color-primary-500: #39A900;   /* Por defecto — Verde institucional del SENA */
---color-primary-900: #1B5E20;   /* Tonalidad más oscura del verde SENA */
+--color-primary-500: #39A900;   /* Default — SENA Corporate Green */
+--color-primary-900: #1B5E20;   /* Darkest SENA Green shade */
 
---color-secondary-500: #00324D; /* Azul oscuro de contraste del escudo institucional */
---color-neutral-50:  #F8F9FA;   /* Fondo claro de la aplicación */
---color-neutral-900: #212529;   /* Color de texto principal oscuro */
+--color-secondary-500: #00324D; /* Complementary dark blue from institutional emblem */
+--color-neutral-50:  #F8F9FA;   /* Light application background */
+--color-neutral-900: #212529;   /* Dark primary text color */
 
 /* Semantic colors */
---color-success:  #28A745;      /* Verde — éxito, disponible / solicitud enviada con éxito */
---color-warning:  #FFC107;      /* Amarillo — pocas plazas, estado pendiente de aprobación */
---color-error:    #DC3545;      /* Rojo — sin cupo, error, reserva cancelada */
---color-info:     #17A2B8;      /* Azul — información general o ayuda */
+--color-success:  #28A745;      /* Green — success, available / booking request successfully sent */
+--color-warning:  #FFC107;      /* Yellow — caution, few spots left / booking approval pending status */
+--color-error:    #DC3545;      /* Red — no slots left, error, booking cancelled */
+--color-info:     #17A2B8;      /* Blue — general system information or support help */
 
 /* Text */
---color-text-primary:   #212529; /* Texto primario de alto contraste */
---color-text-secondary: #6C757D; /* Texto secundario, subtítulos o etiquetas */
---color-text-disabled:  #ADB5BD; /* Estado deshabilitado de elementos */
+--color-text-primary:   #212529; /* High contrast primary text */
+--color-text-secondary: #6C757D; /* Secondary text, subtitles, or field labels */
+--color-text-disabled:  #ADB5BD; /* Disabled state of interactive elements */
 
 /* Backgrounds */
---color-bg-page:    #F8F9FA;     /* Fondo general de la plataforma web */
---color-bg-card:    #FFFFFF;     /* Fondo de las tarjetas de planes turísticos */
---color-bg-overlay: rgba(33, 37, 41, 0.5); /* Fondo semitransparente de modales (Login/Reserva) */
+--color-bg-page:    #F8F9FA;     /* Main web platform background */
+--color-bg-card:    #FFFFFF;     /* Background for tour plan cards */
+--color-bg-overlay: rgba(33, 37, 41, 0.5); /* Semitransparent backdrop for modals (Login/Booking) */
 ```
 
 ### Typography
 
 ```css
-/* Families (Basado en la especificación responsiva con Bootstrap / Tailwind CSS del SRS) */
+/* Families (Based on responsive specifications with Bootstrap / Tailwind CSS from SRS) */
 --font-family-sans:  'system-ui', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 --font-family-mono:  'SFMono-Regular', Menlo, Monaco, Consolas, monospace;
 
