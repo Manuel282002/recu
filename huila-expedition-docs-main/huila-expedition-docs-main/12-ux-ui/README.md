@@ -16,67 +16,58 @@ Changing the code in production with real users can cost days and reputation.
 
 ### `navigation-map.md` ⭐ (Start here)
 The map of all screens/pages and how they connect.
-**Fill in:** navigation tree, from which screen you reach which, what role can access what.
 
-**Format:**
-```markdown
 ## Navigation map
 
 ### Public area (no authentication)
-- / (home)
-  - /login
-  - /register
-  - /recover-password
+- / (Huila Travel Expedition Home)
+  - /auth/login
+  - /auth/register (Opciones: Viajero / Agencia)
+  - /planes (Resultados de búsqueda con filtros por municipio, precio y duración)
+  - /planes/{id} (Ficha de detalle de la experiencia turística e itinerario)
 
-### Private area — Role: [Role 1]
+### Private area — Role: Turista / Viajero
 - /dashboard
-  - /[module-1]
-    - /[module-1]/list
-    - /[module-1]/{id}/detail
-  - /profile
+  - /reservas
+    - /reservas/list (Historial de consultas pasadas y activas)
+    - /reservas/{id} (Detalle del bono de solicitud y estado de confirmación)
+  - /profile (Gestión de cuenta personal)
 
-### Private area — Role: [Role 2]
-[...]
+### Private area — Role: Agencia Local (Proveedor)
+- /dashboard
+  - /planes
+    - /planes/new (Formulario en línea para la creación de un plan turístico)
+    - /planes/{id}/edit (Formulario de edición y actualización)
+  - /reservas
+    - /reservas/list (Panel de gestión de solicitudes recibidas para aprobación o cancelación)
+  - /profile (Actualización de información de contacto, redes sociales y enlace a sitio web propio)
+
+### Private area — Role: Administrador de Plataforma
+- /admin
+  - /agencias (Verificación y validación manual del Registro Nacional de Turismo - RNT)
+  - /reseñas (Módulo de moderación manual de calificaciones y comentarios recibidos)
+  - /overview (Panel administrativo con estadísticas generales del mes)
 
 ## Access matrix
-| Screen | [Role 1] | [Role 2] | [Admin] |
-|--------|---------|---------|---------|
-| /dashboard | ✅ | ✅ | ✅ |
-| /admin | ❌ | ❌ | ✅ |
-```
+
+| Screen | Turista / Viajero | Agencia Local | Administrador | Public |
+|--------|:---:|:---:|:---:|:---:|
+| `/` (Home) | ✅ | ✅ | ✅ | ✅ |
+| `/auth/login` / `/auth/register` | ❌ | ❌ | ❌ | ✅ |
+| `/planes/{id}` (Detalle del Plan) | ✅ | ✅ | ✅ | ✅ |
+| `/dashboard` (General) | ✅ | ✅ | ✅ | ❌ |
+| `/planes/new` / `/edit` | ❌ | ✅ | ✅ | ❌ |
+| `/admin/*` (Módulos de Control) | ❌ | ❌ | ✅ | ❌ |
+
+---
 
 ### `wireframes.md`
 Low-fidelity designs of the main screens.
-**Fill in:** wireframes in ASCII, Figma, or Balsamiq. Focus on structure, not colors.
+Contiene la estructura visual responsiva y en formato mobile-first (para pantallas desde 320px de ancho) de los componentes clave: el buscador de municipios (Villavieja, San Agustín, Neiva, Rivera, Pitalito, La Plata), la sección de planes destacados y el formulario de reserva con aceptación explícita de la Ley 1581 de 2012.
 
 ### `design-system.md`
 The project's design system: tokens, components, patterns.
-**Fill in:** color palette, typography, spacing, base components (buttons, forms, tables).
-
-**Format:**
-```markdown
-## Design tokens
-
-### Colors
-| Token | Value | Use |
-|-------|-------|-----|
-| --color-primary | #1976D2 | Primary buttons, links |
-| --color-error | #D32F2F | Error messages |
-| --color-success | #388E3C | Confirmations |
-
-### Typography
-| Level | Size | Weight | Use |
-|-------|------|--------|-----|
-| H1 | 32px | 700 | Page titles |
-| Body | 16px | 400 | General text |
-
-## Components
-### Primary button
-[description, variants, when to use it]
-
-### Data table
-[columns, pagination, search, inline actions]
-```
+Contiene la paleta corporativa basada en el Verde Institucional del SENA (`#39A900`), la tipografía adaptada a los frameworks Bootstrap y Tailwind CSS, y los estados semánticos del sistema (Disponible, Pocas plazas, Sin cupo).
 
 ---
 
@@ -84,15 +75,15 @@ The project's design system: tokens, components, patterns.
 
 | This section is fed by... | And feeds into... |
 |---------------------------|-------------------|
-| `04-requirements/user-stories.md` → what flows exist | Screens implementing each HU |
-| `02-domain/entities-and-rules.md` → what data to display | Fields in wireframes |
-| `09-microservices/` → what APIs the frontend consumes | What data arrives at each screen |
+| `04-requirements/user-stories.md` → what flows exist (HU-01 a HU-20) | Screens implementing each HU |
+| `02-domain/entities-and-rules.md` → what data to display (Agencias, Planes, Calendarios, Reservas, Reseñas) | Fields in wireframes and tables |
+| `09-microservices/` → what APIs the frontend consumes (Laravel 10+ Backend REST API) | What data arrives at each screen |
 
 ---
 
 ## Questions this section must answer
 
-- How many screens does the system have?
-- How does each type of user navigate?
-- What visual components are repeated?
-- What is the system's visual language?
+- **How many screens does the system have?** Posee la página principal (Home), el flujo de autenticación (Login/Registro/Recuperación), el flujo público de búsqueda y detalle de planes, los paneles privados de autogestión para las Agencias/Turistas y el panel centralizado de control para el Administrador.
+- **How does each type of user navigate?** Los viajeros buscan de forma libre y solicitan reservas con un checkout optimizado; las agencias navegan por formularios privados de inventario en tiempo real; y el administrador gestiona solicitudes mediante tablas de datos y paneles estadísticos generales.
+- **What visual components are repeated?** Se repiten los botones con estados de carga síncronos/asíncronos, las tarjetas descriptivas de planes turísticos con fotos, los mensajes de error en color rojo debajo de los campos de los formularios, y los modales con fondo oscurecido para confirmaciones destructivas.
+- **What is the system's visual language?** Un diseño limpio, accesible y responsivo (mobile-first), regido por la identidad de la región del Huila ("desierto de estrellas y montaña verde") y alineado cromáticamente con los lineamientos del SENA.
