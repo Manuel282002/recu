@@ -14,38 +14,38 @@ Tokens are the design system's variables. Changing a token changes the entire sy
 
 ```css
 /* Base palette */
---color-primary-50:  #[hex];   /* Lightest */
---color-primary-100: #[hex];
---color-primary-500: #[hex];   /* Default */
---color-primary-900: #[hex];   /* Darkest */
+--color-primary-50:  #E8F5E9;   /* Tonalidad más clara del verde SENA */
+--color-primary-100: #C8E6C9;
+--color-primary-500: #39A900;   /* Por defecto — Verde institucional del SENA */
+--color-primary-900: #1B5E20;   /* Tonalidad más oscura del verde SENA */
 
---color-secondary-500: #[hex];
---color-neutral-50:  #[hex];
---color-neutral-900: #[hex];
+--color-secondary-500: #00324D; /* Azul oscuro de contraste del escudo institucional */
+--color-neutral-50:  #F8F9FA;   /* Fondo claro de la aplicación */
+--color-neutral-900: #212529;   /* Color de texto principal oscuro */
 
 /* Semantic colors */
---color-success:  #[hex];      /* Green — success, confirmed */
---color-warning:  #[hex];      /* Yellow — caution, pending */
---color-error:    #[hex];      /* Red — error, cancelled */
---color-info:     #[hex];      /* Blue — neutral information */
+--color-success:  #28A745;      /* Verde — éxito, disponible / solicitud enviada con éxito */
+--color-warning:  #FFC107;      /* Amarillo — pocas plazas, estado pendiente de aprobación */
+--color-error:    #DC3545;      /* Rojo — sin cupo, error, reserva cancelada */
+--color-info:     #17A2B8;      /* Azul — información general o ayuda */
 
 /* Text */
---color-text-primary:   #[hex];
---color-text-secondary: #[hex];
---color-text-disabled:  #[hex];
+--color-text-primary:   #212529; /* Texto primario de alto contraste */
+--color-text-secondary: #6C757D; /* Texto secundario, subtítulos o etiquetas */
+--color-text-disabled:  #ADB5BD; /* Estado deshabilitado de elementos */
 
 /* Backgrounds */
---color-bg-page:    #[hex];
---color-bg-card:    #[hex];
---color-bg-overlay: rgba([r],[g],[b], 0.5);
+--color-bg-page:    #F8F9FA;     /* Fondo general de la plataforma web */
+--color-bg-card:    #FFFFFF;     /* Fondo de las tarjetas de planes turísticos */
+--color-bg-overlay: rgba(33, 37, 41, 0.5); /* Fondo semitransparente de modales (Login/Reserva) */
 ```
 
 ### Typography
 
 ```css
-/* Families */
---font-family-sans:  '[Font name], sans-serif';
---font-family-mono:  '[Mono font name], monospace';
+/* Families (Basado en la especificación responsiva con Bootstrap / Tailwind CSS del SRS) */
+--font-family-sans:  'system-ui', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+--font-family-mono:  'SFMono-Regular', Menlo, Monaco, Consolas, monospace;
 
 /* Sizes (modular scale 1.25) */
 --font-size-xs:   0.75rem;   /* 12px */
@@ -131,11 +131,6 @@ Tokens are the design system's variables. Changing a token changes the entire sy
 - The message appears below the field, in red
 - The field border turns red
 - The message says how to fix the error, not just that there is an error
-
-```
-✓ "The email must have the format user@domain.com"
-✗ "Invalid email"
-```
 
 ### Feedback
 
